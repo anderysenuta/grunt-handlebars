@@ -13,38 +13,60 @@ module.exports = function(grunt) {
 
   grunt.registerMultiTask('handlebars_json2template', 'The best Grunt plugin ever.', function() {
     var config = this.data,
-      template = [],
-      templateData = [];
-
-    grunt.file.mkdir(config.path);
+      arrTemplates = [],
+      langTemplates = [],
+      lang = [];
 
     this.files.forEach(function(f) {
-      if (f.dest === 'src') {
-        f.src.filter(function (filepath) {
-          template.push(filepath);
-        });
-      }
-      if (f.dest === 'templateData') {
-        f.src.filter(function (filepath) {
-          templateData.push(filepath);
+      if (f.dest === 'template') {
+        f.src.forEach(function(filepath){
+          var nameDir = filepath.split("/").pop(),
+            tempArrLang = {};
+
+          grunt.file.recurse(filepath, function(abspath, rootdir, subdir, filename){
+            var temp = filename.split(".");
+            if (temp[1] === "json") {
+              var isNewLang = lang.some(function(item){
+                return item === temp[0];
+              });
+              if(!isNewLang) lang.push(temp[0]);
+              tempArrLang[temp[0]] = abspath;
+            }
+            if (temp[1] === "html") {
+              arrTemplates.push({
+                nameTmp: nameDir,
+                src: abspath
+              })
+            }
+          });
+          langTemplates.push({
+            nameTemplate: nameDir,
+            src: tempArrLang
+          })
         });
       }
     });
 
-    template.forEach(function(tmp){
-      var source = grunt.file.read(tmp),
-        urlArr = tmp.split("/").reverse()[0].split(".");
+    lang.forEach(function(lng){
+      grunt.file.mkdir(config.path + lng);
 
+      arrTemplates.forEach(function(tmpl){
+        var template = Handlebars.compile(grunt.file.read(tmpl.src)),
+          data = {},
+          nameFile = tmpl["src"].split("/").pop();
 
-      templateData.forEach(function(tmpData){
-        var template = Handlebars.compile(source),
-          name = tmpData.split("/").reverse()[0].split(".")[0],
-          fullUrl = urlArr[0] + "." + name + "." + urlArr[1],
-          json = grunt.file.readJSON(tmpData);
+        langTemplates.forEach(function(currTempLang){
+          if(currTempLang.nameTemplate === tmpl.nameTmp && currTempLang['src'][lng]){
+            data = grunt.file.readJSON(currTempLang['src'][lng]);
 
-        grunt.file.write(config.path + fullUrl, template(json));
-
-      });
+            if(tmpl.nameTmp === "index") {
+              grunt.file.write(config.path + lng +"/"+ nameFile, template(data));
+            }else {
+              grunt.file.write(config.path + lng + "/"+ tmpl.nameTmp +"/"+ nameFile, template(data));
+            }
+          }
+        });
+      })
     });
   });
 };
