@@ -1,7 +1,7 @@
 {
   "name": "grunt-handlebars-json2template",
   "description": "The best Grunt plugin ever.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/anderysenuta/grunt-handlebars",
   "author": {
     "name": "andrei_senuta",
