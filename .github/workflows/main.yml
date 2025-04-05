@@ -5,14 +5,11 @@ on:
 jobs:
   gcp_trigger:
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/heads/patch/')
     steps:
       - name: Check patch branch
         run: |
-          echo "Patch workflow was run on: ${{ github.event.inputs.branch }}"
-          if [[ "${{ github.event.inputs.branch }}" != patch/* ]]; then
-            echo "Error: patch branch name shoud start from 'patch/'"
-            exit 1
-          fi
+          echo "Patch workflow was run on: ${{ github.ref_name }}"
 
       - name: Run gcp trigger
         run: |
