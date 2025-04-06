@@ -33,5 +33,5 @@ jobs:
           echo "Triggering GCP build for branch: $BRANCH_NAME"
           gcloud builds triggers run e73501b9-8a59-465c-8eab-fbff1bd7068b \
             --region=us-east1 \
-            --branch="$BRANCH_NAME" \
+            --substitutions=_PATCH_BRANCH=$BRANCH_NAME \
             --project="$PROJECT_ID"
